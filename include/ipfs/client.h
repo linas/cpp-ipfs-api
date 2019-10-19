@@ -310,6 +310,84 @@ class Client {
       */
       Json* result);
 
+  /** Generate a new key.
+   *
+   * Implements
+   * https://github.com/ipfs/interface-ipfs-core/tree/master/SPEC/KEY.md#key.gen.
+   *
+   * An example usage:
+   * @snippet key.cc ipfs::Client::KeyNew
+   *
+   * @throw std::exception if any error occurs
+   *
+   * @since version 0.4.0 */
+  void KeyNew(
+      /** [in] Key name (local, user-friendly name for the key). */
+      const std::string& key_name,
+      /** [out] Key object. */
+      std::string* key_id,
+      /** [in] Key type. */
+      const std::string& key_type = "rsa",
+      /** [in] Key size. */
+      const std::string& key_size = "2048");
+
+  /** Remove a key.
+   *
+   * Implements
+   * https://github.com/ipfs/interface-ipfs-core/tree/master/SPEC/KEY.md#key.rm.
+   *
+   * An example usage:
+   * @snippet key.cc ipfs::Client::KeyRm
+   *
+   * @throw std::exception if any error occurs
+   *
+   * @since version 0.4.0 */
+  void KeyRm(
+      /** [in] Key name (local, user-friendly name for the key). */
+      const std::string& key_name);
+
+  /** Publish an IPNS name attached to a given value.
+   *
+   * Implements
+   * https://github.com/ipfs/interface-ipfs-core/tree/master/SPEC/NAME.md#name.publish.
+   *
+   * An example usage:
+   * @snippet name.cc ipfs::Client::NamePublish
+   *
+   * @throw std::exception if any error occurs
+   *
+   * @since version 0.4.0 */
+  void NamePublish(
+      /** [in] Id (multihash) of the object to publish. */
+      const std::string& object_id,
+      /** [in] Name of the key to use. This is the local,
+       * human-friendly keyname */
+      const std::string& key_name,
+      /** [out] IPNS name Id (multihash) of the named object. */
+      std::string* name_id,
+      /** [in] Lifetime duration of the record. */
+      const std::string& lifetime = "24h",
+      /** [in] Duration of client's cache before new query. */
+      const std::string& ttl = "60s");
+
+  /** Resolve an IPNS name.
+   *
+   * Implements
+   * https://github.com/ipfs/interface-ipfs-core/tree/master/SPEC/NAME.md#name.resolve.
+   *
+   * An example usage:
+   * @snippet name.cc ipfs::Client::NameResolve
+   *
+   * @throw std::exception if any error occurs
+   *
+   * @since version 0.4.0 */
+  void NameResolve(
+      /** [in] Id (multihash) of the name to resolve. */
+      const std::string& name_id,
+      /** [out] IPFS path string to the resolving object.
+       For example: "/ipfs/QmRrVRGx5xAXX52BYuScmJk1KWPny86BtexP8YNJ8jz76U" */
+      std::string* path_string);
+
   /** Create a new MerkleDAG node.
    *
    * Implements

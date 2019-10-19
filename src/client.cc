@@ -224,6 +224,60 @@ void Client::FilesLs(const std::string& path, Json* json) {
   FetchAndParseJson(MakeUrl("file/ls", {{"arg", path}}), {}, json);
 }
 
+void Client::KeyNew(const std::string& key_name,
+                    std::string* generated_key,
+                    const std::string& key_type,
+                    const std::string& key_size)
+{
+  Json response;
+
+  FetchAndParseJson(
+      MakeUrl("key/gen", {{"arg", key_name},
+                          {"type", key_type},
+                          {"size", key_size}}),
+      &response);
+  *generated_key = response["Id"];
+}
+
+void Client::KeyRm(const std::string& key_name) {
+  std::stringstream body;
+  http_->Fetch(MakeUrl("key/rm", {{"arg", key_name}}), {}, &body);
+
+#ifdef ALTERNATE_IMPLEMENTATION
+  // Another way to do the above.
+  Json response;
+  FetchAndParseJson(
+      MakeUrl("key/rm", {{"arg", key_name}}),
+      &response);
+#endif
+}
+
+void Client::NamePublish(const std::string& object_id,
+                         const std::string& key_name,
+                         std::string* name_id,
+                         const std::string& lifetime,
+                         const std::string& ttl)
+{
+  Json response;
+
+  FetchAndParseJson(MakeUrl("name/publish",
+                            {{"arg", object_id},
+                             {"key", key_name},
+                             {"lifetime", lifetime},
+                             {"ttl", ttl}}),
+                            &response);
+
+  GetProperty(response, "Name", 0, name_id);
+}
+
+void Client::NameResolve(const std::string& name_id, std::string* path_string) {
+  Json response;
+
+  FetchAndParseJson(MakeUrl("name/resolve", {{"arg", name_id}}), &response);
+
+  GetProperty(response, "Path", 0, path_string);
+}
+
 void Client::ObjectNew(std::string* object_id) {
   Json response;
 
