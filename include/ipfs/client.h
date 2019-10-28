@@ -1,4 +1,4 @@
-/* Copyright (c) 2016-2016, Vasil Dimov
+/* Copyright (c) 2016-2019, The C++ IPFS client library developers
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
@@ -311,7 +311,7 @@ class Client {
   /** List directory contents for Unix filesystem objects.
    *
    * Implements
-   * https://ipfs.io/docs/api/#api-v0-file-ls
+   * https://github.com/ipfs/interface-ipfs-core/blob/master/SPEC/FILES.md#ls.
    *
    * An example usage:
    * @snippet files.cc ipfs::Client::FilesLs
@@ -351,69 +351,53 @@ class Client {
       */
       Json* result);
 
+  /** Generate a new key.
+   *
+   * Implements
+   * https://github.com/ipfs/interface-js-ipfs-core/blob/master/SPEC/KEY.md#keygen.
+   *
+   * An example usage:
+   * @snippet key.cc ipfs::Client::KeyGen
+   *
+   * @throw std::exception if any error occurs
+   *
+   * @since version 0.3.0 */
+  void KeyGen(
+      /** [in] Key name (local, user-friendly name for the key). */
+      const std::string& key_name,
+      /** [in] Key type. */
+      const std::string& key_type,
+      /** [in] Key size. */
+      size_t key_size,
+      /** [out] Key CID. */
+      std::string* key_id);
+
   /** List all the keys.
    *
    * Implements
-   * https://github.com/ipfs/interface-ipfs-core/blob/master/SPEC/KEY.md#key.list.
+   * https://github.com/ipfs/interface-js-ipfs-core/blob/master/SPEC/KEY.md#keylist.
    *
    * An example usage:
    * @snippet key.cc ipfs::Client::KeyList
    *
    * @throw std::exception if any error occurs
    *
-   * @since version 0.4.0 */
+   * @since version 0.3.0 */
   void KeyList(
       /** [out] List of all local keys. */
       Json* key_list);
 
-  /** Find a single key by name.
-   *
-   * Handy utility wrapper around KeyList.
-   *
-   * An example usage:
-   * @snippet key.cc ipfs::Client::KeyFind
-   *
-   * @throw std::exception if any error occurs
-   *
-   * @since version 0.4.0 */
-  void KeyFind(
-      /** [in] Key name (local, user-friendly name for the key). */
-      const std::string& key_name,
-      /** [out] Key CID. */
-      std::string* key_id);
-
-  /** Generate a new key.
-   *
-   * Implements
-   * https://github.com/ipfs/interface-ipfs-core/blob/master/SPEC/KEY.md#key.gen.
-   *
-   * An example usage:
-   * @snippet key.cc ipfs::Client::KeyNew
-   *
-   * @throw std::exception if any error occurs
-   *
-   * @since version 0.4.0 */
-  void KeyNew(
-      /** [in] Key name (local, user-friendly name for the key). */
-      const std::string& key_name,
-      /** [out] Key CID. */
-      std::string* key_id,
-      /** [in] Key type. */
-      const std::string& key_type = "rsa",
-      /** [in] Key size. */
-      const std::string& key_size = "2048");
-
   /** Remove a key.
    *
    * Implements
-   * https://github.com/ipfs/interface-ipfs-core/blob/master/SPEC/KEY.md#key.rm.
+   * https://github.com/ipfs/interface-js-ipfs-core/blob/master/SPEC/KEY.md#keyrm.
    *
    * An example usage:
    * @snippet key.cc ipfs::Client::KeyRm
    *
    * @throw std::exception if any error occurs
    *
-   * @since version 0.4.0 */
+   * @since version 0.3.0 */
   void KeyRm(
       /** [in] Key name (local, user-friendly name for the key). */
       const std::string& key_name);
@@ -421,7 +405,7 @@ class Client {
   /** Publish an IPNS name attached to a given value.
    *
    * Implements
-   * https://github.com/ipfs/interface-ipfs-core/tree/master/SPEC/NAME.md#name.publish.
+   * https://github.com/ipfs/interface-ipfs-core/blob/master/SPEC/NAME.md#namepublish
    *
    * An example usage:
    * @snippet name.cc ipfs::Client::NamePublish
@@ -435,17 +419,25 @@ class Client {
       /** [in] Name of the key to use. This is the local,
        * human-friendly keyname */
       const std::string& key_name,
-      /** [out] IPNS name Id (multihash) of the named object. */
-      std::string* name_id,
-      /** [in] Lifetime duration of the record. */
-      const std::string& lifetime = "24h",
-      /** [in] Duration of client's cache before new query. */
-      const std::string& ttl = "60s");
+      /** [in] Optional JSON parameter providing options.
+       * If specified, these will be used to determine how the name is
+       * published:
+       * {
+       *    resolve:  // bool - Resolve given path before publishing.
+       *              //   Default: true
+       *    lifetime: // string - Lifetime duration of the record.
+       *              //   Default: 24h
+       *    ttl:      // string - Duration in client's cache.
+       * }
+       */
+      const Json& options,
+      /** [out] IPNS name id (multihash) of the named object. */
+      std::string* name_id);
 
   /** Resolve an IPNS name.
    *
    * Implements
-   * https://github.com/ipfs/interface-ipfs-core/tree/master/SPEC/NAME.md#name.resolve.
+   * https://github.com/ipfs/interface-ipfs-core/blob/master/SPEC/NAME.md#nameresolve
    *
    * An example usage:
    * @snippet name.cc ipfs::Client::NameResolve
@@ -457,7 +449,7 @@ class Client {
       /** [in] Id (multihash) of the name to resolve. */
       const std::string& name_id,
       /** [out] IPFS path string to the resolving object.
-       For example: "/ipfs/QmRrVRGx5xAXX52BYuScmJk1KWPny86BtexP8YNJ8jz76U" */
+       * For example: "/ipfs/QmRrVRGx5xAXX52BYuScmJk1KWPny86BtexP8YNJ8jz76U" */
       std::string* path_string);
 
   /** Create a new MerkleDAG node.
