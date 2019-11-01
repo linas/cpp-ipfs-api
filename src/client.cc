@@ -17,16 +17,17 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 
+#include <ipfs/client.h>
+#include <ipfs/http/transport-curl.h>
+#include <ipfs/http/transport.h>
+
 #include <iostream>
 #include <nlohmann/json.hpp>
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <utility>
 #include <vector>
-
-#include <ipfs/client.h>
-#include <ipfs/http/transport-curl.h>
-#include <ipfs/http/transport.h>
 
 namespace ipfs {
 
@@ -35,9 +36,41 @@ Client::Client(const std::string& host, long port)
   http_ = new http::TransportCurl();
 }
 
-Client::Client(const Client& other)
-    : url_prefix_(other.url_prefix_) {
+Client::Client(const Client& other) : url_prefix_(other.url_prefix_) {
   http_ = new http::TransportCurl();
+}
+
+Client::Client(Client&& other)
+    : url_prefix_(std::move(other.url_prefix_)), http_(other.http_) {
+  other.http_ = nullptr;
+}
+
+Client& Client::operator=(const Client& other) {
+  if (this == &other) {
+    return *this;
+  }
+
+  url_prefix_ = other.url_prefix_;
+
+  http::Transport* old_http_ = http_;
+  http_ = new http::TransportCurl();
+  delete old_http_;
+
+  return *this;
+}
+
+Client& Client::operator=(Client&& other) {
+  if (this == &other) {
+    return *this;
+  }
+
+  std::move(other.url_prefix_);
+
+  delete http_;
+  http_ = other.http_;
+  other.http_ = nullptr;
+
+  return *this;
 }
 
 Client::~Client() { delete http_; }
@@ -241,23 +274,18 @@ void Client::FilesLs(const std::string& path, Json* json) {
   FetchAndParseJson(MakeUrl("file/ls", {{"arg", path}}), {}, json);
 }
 
-void Client::KeyGen(const std::string& key_name,
-                    const std::string& key_type,
-                    size_t key_size,
-                    std::string* generated_key)
-{
+void Client::KeyGen(const std::string& key_name, const std::string& key_type,
+                    size_t key_size, std::string* generated_key) {
   Json response;
 
-  FetchAndParseJson(
-      MakeUrl("key/gen", {{"arg", key_name},
-                          {"type", key_type},
-                          {"size", std::to_string(key_size)}}),
-      &response);
+  FetchAndParseJson(MakeUrl("key/gen", {{"arg", key_name},
+                                        {"type", key_type},
+                                        {"size", std::to_string(key_size)}}),
+                    &response);
   *generated_key = response["Id"];
 }
 
-void Client::KeyList(Json* key_list)
-{
+void Client::KeyList(Json* key_list) {
   Json response;
   FetchAndParseJson(MakeUrl("key/list", {}), &response);
   *key_list = response["Keys"];
@@ -269,16 +297,15 @@ void Client::KeyRm(const std::string& key_name) {
 }
 
 void Client::NamePublish(const std::string& object_id,
-                         const std::string& key_name,
-                         const ipfs::Json& options,
-                         std::string* name_id)
-{
+                         const std::string& key_name, const ipfs::Json& options,
+                         std::string* name_id) {
   Json response;
 
   std::vector<std::pair<std::string, std::string>> args;
   args = {{"arg", object_id}, {"key", key_name}};
-  for (auto& elt : options.items())
+  for (auto& elt : options.items()) {
     args.push_back({elt.key(), elt.value()});
+  }
 
   FetchAndParseJson(MakeUrl("name/publish", args), &response);
 

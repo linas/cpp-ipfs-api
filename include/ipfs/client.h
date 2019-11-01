@@ -20,13 +20,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 #ifndef IPFS_CLIENT_H
 #define IPFS_CLIENT_H
 
+#include <ipfs/http/transport.h>
+
 #include <iostream>
 #include <nlohmann/json.hpp>
 #include <string>
 #include <utility>
 #include <vector>
-
-#include <ipfs/http/transport.h>
 
 /** IPFS namespace. Everything IPFS related goes inside it. */
 namespace ipfs {
@@ -57,9 +57,27 @@ class Client {
       /** [in] Port to connect to. */
       long port);
 
+  /** Copy-constructor. */
   Client(
-      /** [in] Other client connection to be copied */
+      /** [in] Other client connection to be copied. */
       const Client&);
+
+  /** Move-constructor. */
+  Client(
+      /** [in,out] Other client connection to be moved. */
+      Client&&);
+
+  /** Copy assignment operator.
+   * @return *this */
+  Client& operator=(
+      /** [in] Other client connection to be copied. */
+      const Client&);
+
+  /** Move assignment operator.
+   * @return *this */
+  Client& operator=(
+      /** [in,out] Other client connection to be moved. */
+      Client&&);
 
   /** Destructor.
    * @since version 0.1.0 */
@@ -405,7 +423,7 @@ class Client {
   /** Publish an IPNS name attached to a given value.
    *
    * Implements
-   * https://github.com/ipfs/interface-ipfs-core/blob/master/SPEC/NAME.md#namepublish
+   * https://github.com/ipfs/interface-ipfs-core/blob/master/SPEC/NAME.md#namepublish.
    *
    * An example usage:
    * @snippet name.cc ipfs::Client::NamePublish
@@ -437,7 +455,7 @@ class Client {
   /** Resolve an IPNS name.
    *
    * Implements
-   * https://github.com/ipfs/interface-ipfs-core/blob/master/SPEC/NAME.md#nameresolve
+   * https://github.com/ipfs/interface-ipfs-core/blob/master/SPEC/NAME.md#nameresolve.
    *
    * An example usage:
    * @snippet name.cc ipfs::Client::NameResolve
